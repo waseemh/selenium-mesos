@@ -51,7 +51,7 @@ public class SeleniumScheduler implements Scheduler {
     @Override
     public void reregistered(SchedulerDriver schedulerDriver, Protos.MasterInfo masterInfo) {
         config.getState().removeFrameworkId();
-        System.out.println("Re-registered");
+        LOGGER.info("Re-registered");
     }
 
     @Override
@@ -191,6 +191,7 @@ public class SeleniumScheduler implements Scheduler {
     public void statusUpdate(SchedulerDriver schedulerDriver, Protos.TaskStatus taskStatus) {
 
         Protos.TaskID taskId = taskStatus.getTaskId();
+        LOGGER.info("TASK STATUS: " + taskStatus.getMessage());
         LOGGER.info("Task {} is in state {}", taskId.getValue(), taskStatus.getState());
 
         switch (taskStatus.getState()) {
@@ -212,7 +213,7 @@ public class SeleniumScheduler implements Scheduler {
 
     @Override
     public void frameworkMessage(SchedulerDriver schedulerDriver, Protos.ExecutorID executorID, Protos.SlaveID slaveID, byte[] bytes) {
-        System.out.println("Received message (scheduler): " + new String(bytes)
+        LOGGER.info("Received message (scheduler): " + new String(bytes)
                 + " from " + executorID.getValue());
     }
 
@@ -223,16 +224,16 @@ public class SeleniumScheduler implements Scheduler {
 
     @Override
     public void slaveLost(SchedulerDriver schedulerDriver, Protos.SlaveID slaveID) {
-        System.out.println("Lost slave: " + slaveID);
+        LOGGER.info("Lost slave: " + slaveID);
     }
 
     @Override
     public void executorLost(SchedulerDriver schedulerDriver, Protos.ExecutorID executorID, Protos.SlaveID slaveID, int i) {
-        System.out.println("Lost executor on slave " + slaveID);
+        LOGGER.info("Lost executor on slave " + slaveID);
     }
 
     @Override
     public void error(SchedulerDriver schedulerDriver, String s) {
-        System.out.println("We've got errors, man: " + s);
+        LOGGER.info("We've got errors, man: " + s);
     }
 }
