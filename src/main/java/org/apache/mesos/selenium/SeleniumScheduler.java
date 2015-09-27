@@ -1,5 +1,8 @@
 package org.apache.mesos.selenium;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.mesos.Protos;
 import org.apache.mesos.Scheduler;
 import org.apache.mesos.SchedulerDriver;
@@ -10,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +32,11 @@ public class SeleniumScheduler implements Scheduler {
 
     private final SeleniumHub hub;
 
-    private boolean isHubInit;
+    private boolean isHubLaunched;
+
+    private boolean isHubRunning;
+
+    private String hubContainerName;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SeleniumScheduler.class);
 
@@ -39,7 +47,8 @@ public class SeleniumScheduler implements Scheduler {
         this.pendingNodes = new LinkedList<SeleniumNode>(config.getGrid().getNodesAsResources());
         this.runningTasks = new HashMap<Protos.TaskID,SeleniumGridResource>();
         this.hub = config.getGrid().getHub();
-        this.isHubInit = false;
+        this.isHubLaunched = false;
+        this.isHubRunning = false;
     }
 
     @Override
@@ -60,15 +69,15 @@ public class SeleniumScheduler implements Scheduler {
         boolean matched = false;
 
         for (Protos.Offer offer : offers) {
-            if(!isHubInit) {
+            if(!isHubLaunched) {
                 if (matches(offer,hub)) {
                     matched = true;
                     Protos.TaskID taskID = launchTask(schedulerDriver,offer,hub);
                     runningTasks.put(taskID, hub);
-                    isHubInit = true;
+                    isHubLaunched = true;
                 }
             }
-            else {
+            else if(isHubRunning) {
                 for (SeleniumNode node : pendingNodes) {
                     if (matches(offer, node)) {
                         matched = true;
@@ -95,7 +104,7 @@ public class SeleniumScheduler implements Scheduler {
         Protos.ContainerInfo.DockerInfo.Builder dockerInfoBuilder = Protos.ContainerInfo.DockerInfo.newBuilder();
         dockerInfoBuilder.setNetwork(Protos.ContainerInfo.DockerInfo.Network.BRIDGE);
         dockerInfoBuilder.setImage(SeleniumDockerCommand.getImageName(gridResource));
-        dockerInfoBuilder.addAllParameters(SeleniumDockerCommand.getCommandParameters(gridResource));
+        dockerInfoBuilder.addAllParameters(SeleniumDockerCommand.getCommandParameters(hubContainerName,gridResource));
 
         // container info
         Protos.ContainerInfo.Builder containerInfoBuilder = Protos.ContainerInfo.newBuilder();
@@ -152,10 +161,11 @@ public class SeleniumScheduler implements Scheduler {
                 } else {
                     LOGGER.error("Mem resource was not a scalar: {0}", resource.getType().toString());
                 }
-            } else if (resource.getName().equals("disk")) {
-                LOGGER.warn("Ignoring disk resources from offer");
-            } else {
-                LOGGER.warn("Ignoring unknown resource type: {0}", resource.getName());
+//            } else if (resource.getName().equals("disk")) {
+//                LOGGER.warn("Ignoring disk resources from offer");
+//            } else {
+//                LOGGER.warn("Ignoring unknown resource type: {0}", resource.getName());
+//            }
             }
         }
 
@@ -173,11 +183,11 @@ public class SeleniumScheduler implements Scheduler {
         if (requestedCpus <= cpus && requestedMem <= mem) {
             return true;
         } else {
-            LOGGER.info(
-                    "Offer not sufficient for slave request:\n"
-                            + offer.getResourcesList().toString()
-                            + "  cpus: " + requestedCpus + "\n"
-                            + "  mem:  " + requestedMem);
+//            LOGGER.info(
+//                    "Offer not sufficient for slave request:\n"
+//                            + offer.getResourcesList().toString()
+//                            + "  cpus: " + requestedCpus + "\n"
+//                            + "  mem:  " + requestedMem);
             return false;
         }
     }
@@ -191,7 +201,7 @@ public class SeleniumScheduler implements Scheduler {
     public void statusUpdate(SchedulerDriver schedulerDriver, Protos.TaskStatus taskStatus) {
 
         Protos.TaskID taskId = taskStatus.getTaskId();
-        LOGGER.info("TASK STATUS: " + taskStatus.getMessage());
+
         LOGGER.info("Task {} is in state {}", taskId.getValue(), taskStatus.getState());
 
         switch (taskStatus.getState()) {
@@ -201,7 +211,27 @@ public class SeleniumScheduler implements Scheduler {
                     pendingNodes.add((SeleniumNode) gridResource);
                 }
                 else if (gridResource instanceof SeleniumHub) {
-                    isHubInit = false;
+                    isHubLaunched = false;
+                }
+                break;
+            case TASK_RUNNING:
+                SeleniumGridResource resource = runningTasks.get(taskId);
+                if(resource instanceof SeleniumHub) {
+                    String containerJsonData = new String(taskStatus.getData().toByteArray());
+                    JsonFactory factory = new JsonFactory();
+
+                    ObjectMapper mapper = new ObjectMapper(factory);
+                    JsonNode rootNode = null;
+                    try {
+                        rootNode = mapper.readTree(containerJsonData);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    hubContainerName = rootNode.get(0).get("Name").asText().replace("/","");
+                    LOGGER.info("Container Name:" + hubContainerName);
+                    isHubRunning = true;
+                    LOGGER.info("Hub is running...");
                 }
                 break;
             case TASK_FINISHED:
@@ -219,7 +249,7 @@ public class SeleniumScheduler implements Scheduler {
 
     @Override
     public void disconnected(SchedulerDriver schedulerDriver) {
-        System.out.println("We got disconnected yo");
+        LOGGER.info("We got disconnected yo");
     }
 
     @Override
