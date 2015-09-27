@@ -33,14 +33,13 @@ public class SeleniumDockerCommand {
         else return null;
     }
 
-    public static List<Protos.Parameter> getCommandParameters(SeleniumGridResource gridResource) {
+    public static List<Protos.Parameter> getCommandParameters(String hubContainerName, SeleniumGridResource gridResource) {
         List<Protos.Parameter> parameters = new ArrayList<Protos.Parameter>();
         if(gridResource instanceof SeleniumNode) {
-            //parameters.add(org.apache.mesos.Protos.Parameter.newBuilder().setKey("link").setValue("selenium-hub:hub").build());
+            parameters.add(org.apache.mesos.Protos.Parameter.newBuilder().setKey("link").setValue(hubContainerName+":hub").build());
         }
         if(gridResource instanceof SeleniumHub) {
             parameters.add(org.apache.mesos.Protos.Parameter.newBuilder().setKey("publish").setValue("4444:4444").build());
-            parameters.add(org.apache.mesos.Protos.Parameter.newBuilder().setKey("name").setValue("selenium-hub").build());
         }
         return parameters;
     }
