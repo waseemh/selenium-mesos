@@ -2,18 +2,22 @@ mesos-selenium
 ========
 
 A Mesos framework for launching Selenium instances at scale using Docker containers.
+Currently, framework only supports setting up a single Selenium Grid with a single hub and multiple nodes.
+
 
 Requirements
 ========
 
-- Mesos 0.23 and above
+- Apache Mesos 0.23.0 and above
 - JDK 6+ and Maven (optional for building source)
 
 Usage
 ========
 
-Currently, framework only supports launching a Selenium Grid with a single hub and multiple nodes.
-Framework configuration and grid setup are defined using a JSON file.
+Framework configuration is defined in a JSON file which includes ...
+In order to start the framework, both JAR file and configuration JSON file should be placed in Mesos master and launched using java command.
+
+	java -jar /path/to/mesos-selenium.jar /path/to/config.json
 
 Building from Sources
 ========
