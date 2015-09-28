@@ -8,7 +8,7 @@ Currently, framework only supports setting up a single Selenium Grid with a sing
 Roadmap
 =======
 
-### Version 0.1
+### Features
 - Support complex setups with multiple grids and standalone instances.
 - Non-ZooKeeper architectures.
 
