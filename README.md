@@ -4,7 +4,6 @@ selenium-mesos
 A Mesos framework for launching Selenium instances at scale using Docker containers.
 Currently, framework only supports setting up a single Selenium Grid with a single hub and multiple nodes.
 
-
 Roadmap
 =======
 
