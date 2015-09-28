@@ -22,29 +22,21 @@ An example of a Grid setup which includes one hub and three nodes (two firefox +
 	    "zooKeeper": "zk://172.31.0.11:2181/mesos",
 	    "grid": {
 	        "hub": {
-	            "newSessionWaitTimeout": -1,
-	            "jettyMaxThreads": -1,
-	            "nodePolling": 5000,
-	            "cleanUpCycle": 5000,
-	            "timeout": 30000,
-	            "browserTimeout": 0,
-	            "maxSession": 5,
-	            "unregisterIfStillDownAfter": 3000,
-	            "mem": 512,
+	            "mem": 256,
 	            "cpus": 0.5,
 	            "disk": 512
 	        },
 	        "nodes": [
 	            {
 	                "browser": "firefox",
-	                "mem": 256,
+	                "mem": 512,
 	                "cpus": 0.5,
 	                "disk": 512,
 	                "instances": 2
 	            },
 	            {
 	                "browser": "chrome",
-	                "mem": 256,
+	                "mem": 512,
 	                "cpus": 0.5,
 	                "disk": 256,
 	                "instances": 1
@@ -70,7 +62,7 @@ In order to start the framework, both JAR file and configuration JSON file shoul
 License
 ========
 
-Copyright 2014 Waseem Hamshawi
+Copyright to Waseem Hamshawi
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
