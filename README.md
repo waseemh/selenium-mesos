@@ -1,4 +1,4 @@
-mesos-selenium
+selenium-mesos
 ========
 
 A Mesos framework for launching Selenium instances at scale using Docker containers.
