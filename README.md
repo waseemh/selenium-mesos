@@ -11,13 +11,47 @@ Requirements
 - Apache Mesos 0.23.0 and above
 - JDK 6+ and Maven (optional for building source)
 
-Usage
+Configuration
 ========
 
-Framework configuration is defined in a JSON file which includes ...
-In order to start the framework, both JAR file and configuration JSON file should be placed in Mesos master and launched using java command.
+Framework is configured using a JSON-format file. It describes the requested Selenium instances and their resource requirements.
 
-	java -jar /path/to/mesos-selenium.jar /path/to/config.json
+An example of a Grid setup which includes one hub and three nodes (two firefox + one chrome):
+
+	{
+	    "zooKeeper": "zk://172.31.0.11:2181/mesos",
+	    "grid": {
+	        "hub": {
+	            "newSessionWaitTimeout": -1,
+	            "jettyMaxThreads": -1,
+	            "nodePolling": 5000,
+	            "cleanUpCycle": 5000,
+	            "timeout": 30000,
+	            "browserTimeout": 0,
+	            "maxSession": 5,
+	            "unregisterIfStillDownAfter": 3000,
+	            "mem": 512,
+	            "cpus": 0.5,
+	            "disk": 512
+	        },
+	        "nodes": [
+	            {
+	                "browser": "firefox",
+	                "mem": 256,
+	                "cpus": 0.5,
+	                "disk": 512,
+	                "instances": 2
+	            },
+	            {
+	                "browser": "chrome",
+	                "mem": 256,
+	                "cpus": 0.5,
+	                "disk": 256,
+	                "instances": 1
+	            }
+	        ]
+	    }
+	}
 
 Building from Sources
 ========
@@ -25,6 +59,13 @@ Building from Sources
 Maven is used as a build system.
 In order to produce a package, run maven command `mvn clean package -DskipTests`.
 Tests can be executed using command `mvn test`. 
+
+Running the framework
+========
+
+In order to start the framework, both JAR file and configuration JSON file should be placed in Mesos master and launched using java command.
+
+	java -jar /path/to/mesos-selenium.jar /path/to/config.json
 
 License
 ========
