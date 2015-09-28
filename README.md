@@ -5,6 +5,13 @@ A Mesos framework for launching Selenium instances at scale using Docker contain
 Currently, framework only supports setting up a single Selenium Grid with a single hub and multiple nodes.
 
 
+Roadmap
+=======
+
+### Version 0.1
+- Support complex setups with multiple grids and standalone instances.
+- Non-ZooKeeper architectures.
+
 Requirements
 ========
 
@@ -14,7 +21,7 @@ Requirements
 Configuration
 ========
 
-Framework is configured using a JSON-format file. It describes the requested Selenium instances and their resource requirements.
+Framework is configured using a JSON-format file. It includes ZooKeeper URL(s) and the requested Selenium instances with their resource requirements.
 
 An example of a Grid setup which includes one hub and three nodes (two firefox + one chrome):
 
